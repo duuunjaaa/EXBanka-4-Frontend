@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider } from './context/AuthContext'
+import { EmployeesProvider } from './context/EmployeesContext'
 import MainLayout from './layouts/MainLayout'
 import ProtectedRoute from './components/ProtectedRoute'
 import HomePage from './pages/HomePage'
@@ -14,6 +15,7 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
+      <EmployeesProvider>
         <Routes>
           {/* Public pages with Navbar + Footer */}
           <Route element={<MainLayout />}>
@@ -31,6 +33,7 @@ function App() {
 
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+      </EmployeesProvider>
       </AuthProvider>
     </ThemeProvider>
   )

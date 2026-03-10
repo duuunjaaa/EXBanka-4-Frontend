@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useWindowTitle from '../hooks/useWindowTitle'
-import { mockEmployees } from '../mocks/employees'
+import { useEmployees } from '../context/EmployeesContext'
 
 export default function AdminEmployeesPage() {
   useWindowTitle('Employees | AnkaBanka Admin')
   const navigate = useNavigate()
+  const { employees } = useEmployees()
 
   const [filters, setFilters] = useState({ firstName: '', lastName: '', email: '', position: '' })
 
@@ -19,14 +20,14 @@ export default function AdminEmployeesPage() {
 
   const filtered = useMemo(() => {
     const { firstName, lastName, email, position } = filters
-    return mockEmployees.filter((emp) => {
+    return employees.filter((emp) => {
       if (firstName && !emp.firstName.toLowerCase().includes(firstName.toLowerCase())) return false
       if (lastName  && !emp.lastName.toLowerCase().includes(lastName.toLowerCase()))   return false
       if (email     && !emp.email.toLowerCase().includes(email.toLowerCase()))         return false
       if (position  && !emp.position.toLowerCase().includes(position.toLowerCase()))   return false
       return true
     })
-  }, [filters])
+  }, [filters, employees])
 
   const hasFilters = Object.values(filters).some(Boolean)
 
@@ -112,7 +113,7 @@ export default function AdminEmployeesPage() {
           </div>
           {filtered.length > 0 && (
             <div className="px-6 py-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-400 dark:text-slate-500">
-              Showing {filtered.length} of {mockEmployees.length} employees
+              Showing {filtered.length} of {employees.length} employees
             </div>
           )}
         </div>
