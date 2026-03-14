@@ -14,7 +14,7 @@ function validate(fields) {
   return errors
 }
 
-function LoginPage() {
+function EmployeeLoginPage() {
   useWindowTitle('Employee Login | AnkaBanka')
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -158,4 +158,4 @@ function LoginPage() {
   )
 }
 
-export default LoginPage
+export default EmployeeLoginPage

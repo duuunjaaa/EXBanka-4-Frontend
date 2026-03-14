@@ -1,13 +1,14 @@
 import { Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider } from './context/AuthContext'
+import { ClientAuthProvider } from './context/ClientAuthContext'
 import { EmployeesProvider } from './context/EmployeesContext'
 import { ClientsProvider } from './context/ClientsContext'
 import { AccountsProvider } from './context/AccountsContext'
 import MainLayout from './layouts/MainLayout'
 import ProtectedRoute from './components/ProtectedRoute'
-import HomePage from './pages/HomePage'
-import LoginPage from './pages/LoginPage'
+import EmployeeHomePage from './pages/EmployeeHomePage'
+import EmployeeLoginPage from './pages/EmployeeLoginPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import AdminEmployeesPage from './pages/AdminEmployeesPage'
 import EmployeeDetailPage from './pages/EmployeeDetailPage'
@@ -18,6 +19,8 @@ import NewClientPage from './pages/NewClientPage'
 import ClientAccountsPage from './pages/ClientAccountsPage'
 import AccountDetailPage from './pages/AccountDetailPage'
 import NewAccountPage from './pages/NewAccountPage'
+import ClientLoginPage from './pages/ClientLoginPage'
+import ClientHomePage from './pages/ClientHomePage'
 import SetPasswordPage from './pages/SetPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -26,13 +29,14 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
+      <ClientAuthProvider>
       <EmployeesProvider>
       <ClientsProvider>
       <AccountsProvider>
         <Routes>
           {/* Public pages with Navbar + Footer */}
           <Route element={<MainLayout />}>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<EmployeeHomePage />} />
             {/* Protected pages (still use Navbar + Footer layout) */}
             <Route element={<ProtectedRoute />}>
               <Route path="/admin/employees" element={<AdminEmployeesPage />} />
@@ -48,16 +52,21 @@ function App() {
           </Route>
 
           {/* Auth pages — full-screen, no layout */}
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login" element={<EmployeeLoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/set-password" element={<SetPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+          {/* Client portal — full-screen, no layout */}
+          <Route path="/client/login" element={<ClientLoginPage />} />
+          <Route path="/client" element={<ClientHomePage />} />
 
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AccountsProvider>
       </ClientsProvider>
       </EmployeesProvider>
+      </ClientAuthProvider>
       </AuthProvider>
     </ThemeProvider>
   )
