@@ -5,6 +5,7 @@ import ClientPortalLayout from '../../layouts/ClientPortalLayout'
 import { useClientAccounts } from '../../context/ClientAccountsContext'
 import { transferService } from '../../services/transferService'
 import { fmt } from '../../utils/formatting'
+import { useApiError } from '../../context/ApiErrorContext'
 
 const EMPTY_FORM = {
   fromAccountId: '',
@@ -26,6 +27,7 @@ export default function ClientTransfersPage() {
   useWindowTitle('Transfer | AnkaBanka')
   const navigate = useNavigate()
   const { accounts, reload: reloadAccounts } = useClientAccounts()
+  const { addSuccess } = useApiError()
 
   const [form, setForm]       = useState(EMPTY_FORM)
   const [errors, setErrors]   = useState({})
@@ -71,6 +73,7 @@ export default function ClientTransfersPage() {
         amount:        parseFloat(form.amount),
       })
       await reloadAccounts()
+      addSuccess(`${fmt(parseFloat(form.amount), fromAccount.currency)} transferred to ${toAccount.accountName}.`, 'Transfer Successful')
       setSuccess({
         from:   fromAccount,
         to:     toAccount,

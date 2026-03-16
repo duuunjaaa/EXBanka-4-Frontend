@@ -5,6 +5,7 @@ import ClientPortalLayout from '../../layouts/ClientPortalLayout'
 import { useRecipients } from '../../context/RecipientsContext'
 import { isValidAccountNumber } from '../../models/Recipient'
 import Spinner from '../../components/Spinner'
+import { useApiError } from '../../context/ApiErrorContext'
 
 // ─── Shared form component ────────────────────────────────────────────────────
 
@@ -102,6 +103,7 @@ export default function ClientRecipientsPage() {
   useWindowTitle('Recipients | AnkaBanka')
   const navigate = useNavigate()
   const { recipients, loading, addRecipient, updateRecipient, deleteRecipient, reorderRecipients } = useRecipients()
+  const { addSuccess } = useApiError()
   const [dragIndex, setDragIndex] = useState(null)
   const [dropIndex, setDropIndex] = useState(null)
 
@@ -112,16 +114,20 @@ export default function ClientRecipientsPage() {
   async function handleAdd(fields) {
     await addRecipient(fields)
     setShowAdd(false)
+    addSuccess(`${fields.name} added to recipients.`, 'Recipient Added')
   }
 
   async function handleEdit(fields) {
     await updateRecipient(editTarget.id, fields)
     setEditTarget(null)
+    addSuccess(`${fields.name} updated successfully.`, 'Recipient Updated')
   }
 
   async function handleDelete() {
+    const name = deleteTarget.name
     await deleteRecipient(deleteTarget.id)
     setDeleteTarget(null)
+    addSuccess(`${name} removed from recipients.`, 'Recipient Removed')
   }
 
   function handleDragStart(i) {
