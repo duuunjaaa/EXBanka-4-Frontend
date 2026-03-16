@@ -6,6 +6,7 @@ import { useClientAuth } from '../../context/ClientAuthContext'
 import { useClientAccounts } from '../../context/ClientAccountsContext'
 import { fmt } from '../../utils/formatting'
 import Spinner from '../../components/Spinner'
+import { useApiError } from '../../context/ApiErrorContext'
 
 function Row({ label, value, highlight }) {
   return (
@@ -32,6 +33,7 @@ export default function ClientAccountDetailPage() {
   const navigate = useNavigate()
   const { clientUser } = useClientAuth()
   const { accounts, loading } = useClientAccounts()
+  const { addSuccess } = useApiError()
 
   const account = accounts.find((a) => a.id === Number(id))
 
@@ -62,7 +64,10 @@ export default function ClientAccountDetailPage() {
   const reserved = account.balance - account.availableBalance
 
   function saveName() {
-    if (nameInput.trim()) setAccountName(nameInput.trim())
+    if (nameInput.trim()) {
+      setAccountName(nameInput.trim())
+      addSuccess('Account name updated successfully.', 'Saved')
+    }
     setEditingName(false)
   }
 

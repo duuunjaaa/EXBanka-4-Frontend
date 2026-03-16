@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import useWindowTitle from '../../hooks/useWindowTitle'
 import ClientPortalLayout from '../../layouts/ClientPortalLayout'
+import { useApiError } from '../../context/ApiErrorContext'
 
 function fmt(n, currency) {
   return n.toLocaleString('sr-RS', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ` ${currency}`
@@ -20,6 +21,7 @@ export default function ClientPaymentVerifyPage() {
   useWindowTitle('Verify Payment | AnkaBanka')
   const navigate = useNavigate()
   const { state } = useLocation()
+  const { addSuccess } = useApiError()
   const [confirmed, setConfirmed] = useState(false)
 
   // If landed here directly without payment data, go back
@@ -125,7 +127,7 @@ export default function ClientPaymentVerifyPage() {
           <p className="text-xs tracking-widest uppercase text-slate-400 dark:text-slate-500 mb-1">Mobile app</p>
           <p className="text-sm text-slate-500 dark:text-slate-400 font-light mb-5">Tap confirm below to simulate the in-app confirmation.</p>
           <button
-            onClick={() => setConfirmed(true)}
+            onClick={() => { setConfirmed(true); addSuccess(`Payment to ${recipientName} has been submitted.`, 'Payment Confirmed') }}
             className="btn-primary px-10"
           >
             Confirm
