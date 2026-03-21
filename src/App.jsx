@@ -35,6 +35,8 @@ import ClientPaymentVerifyPage from './pages/client/ClientPaymentVerifyPage'
 import ClientTransfersPage from './pages/client/ClientTransfersPage'
 import ClientExchangePage from './pages/client/ClientExchangePage'
 import ClientCardsPage from './pages/client/ClientCardsPage'
+import ClientCardRequestPage from './pages/client/ClientCardRequestPage'
+import ClientCardConfirmPage from './pages/client/ClientCardConfirmPage'
 import ClientLoansPage from './pages/client/ClientLoansPage'
 import ClientRecipientsPage from './pages/client/ClientRecipientsPage'
 import SetPasswordPage from './pages/employee/SetPasswordPage'
@@ -90,6 +92,8 @@ function App() {
           <Route path="/client/transfers" element={<ClientTransfersPage />} />
           <Route path="/client/exchange" element={<ClientExchangePage />} />
           <Route path="/client/cards" element={<ClientCardsPage />} />
+          <Route path="/client/cards/request" element={<ClientCardRequestPage />} />
+          <Route path="/client/cards/confirm" element={<ClientCardConfirmPage />} />
           <Route path="/client/loans" element={<ClientLoansPage />} />
           <Route path="/client/recipients" element={<ClientRecipientsPage />} />
 
