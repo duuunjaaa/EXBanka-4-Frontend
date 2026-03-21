@@ -43,6 +43,8 @@ import ClientLoanApplyPage from './pages/client/ClientLoanApplyPage'
 import ClientRecipientsPage from './pages/client/ClientRecipientsPage'
 import SetPasswordPage from './pages/employee/SetPasswordPage'
 import ResetPasswordPage from './pages/employee/ResetPasswordPage'
+import EmployeeLoanApplicationsPage from './pages/employee/EmployeeLoanApplicationsPage'
+import EmployeeLoansPage from './pages/employee/EmployeeLoansPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 function App() {
@@ -72,6 +74,8 @@ function App() {
               <Route path="/admin/accounts" element={<ClientAccountsPage />} />
               <Route path="/admin/accounts/new" element={<NewAccountPage />} />
               <Route path="/admin/accounts/:id" element={<AccountDetailPage />} />
+              <Route path="/admin/loans/applications" element={<EmployeeLoanApplicationsPage />} />
+              <Route path="/admin/loans" element={<EmployeeLoansPage />} />
             </Route>
           </Route>
 
