@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import useWindowTitle from '../../hooks/useWindowTitle'
+import { useAccounts } from '../../context/AccountsContext'
 import { accountService } from '../../services/accountService'
 import { BankAccount } from '../../models/BankAccount'
 import { fmt } from '../../utils/formatting'
@@ -37,26 +38,44 @@ function Card({ title, children, action }) {
 export default function AccountDetailPage() {
   const { id } = useParams()
   const { addSuccess } = useApiError()
-  const [account, setAccount]           = useState(null)
-  const [loading, setLoading]           = useState(true)
+  const { accounts, loading: listLoading, reload } = useAccounts()
+  const [detail, setDetail]             = useState(null)   // enriched from detail endpoint if available
   const [editingLimits, setEditingLimits] = useState(false)
   const [limitForm, setLimitForm]       = useState({ dailyLimit: '', monthlyLimit: '' })
   const [limitErrors, setLimitErrors]   = useState({})
   const [limitsLoading, setLimitsLoading] = useState(false)
 
+  // Base account from the list (always available for employees)
+  const listAccount = accounts.find((a) => a.id === Number(id))
+  // Use enriched detail if available, otherwise fall back to list data
+  const account = detail ?? listAccount
+
   useWindowTitle(account ? `${account.accountNumber} | AnkaBanka` : 'Account | AnkaBanka')
 
   useEffect(() => {
+    if (accounts.length === 0 && !listLoading) reload()
+  }, [])
+
+  // Try to fetch full details — silently ignore 403 (ownership check on backend)
+  // until a dedicated employee detail endpoint is available.
+  useEffect(() => {
     accountService.getAccountById(id)
       .then((data) => {
-        setAccount(data)
+        setDetail(data)
         setLimitForm({ dailyLimit: String(data.dailyLimit), monthlyLimit: String(data.monthlyLimit) })
       })
-      .catch(() => setAccount(null))
-      .finally(() => setLoading(false))
+      .catch(() => {
+        // Falls back to list data; limits form will be set once listAccount is available
+      })
   }, [id])
 
-  if (loading) {
+  useEffect(() => {
+    if (!detail && listAccount) {
+      setLimitForm({ dailyLimit: String(listAccount.dailyLimit), monthlyLimit: String(listAccount.monthlyLimit) })
+    }
+  }, [listAccount, detail])
+
+  if (listLoading && !account) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
         <Spinner />
@@ -96,7 +115,7 @@ export default function AccountDetailPage() {
         dailyLimit:   parseFloat(limitForm.dailyLimit),
         monthlyLimit: parseFloat(limitForm.monthlyLimit),
       })
-      setAccount(new BankAccount({
+      setDetail(new BankAccount({
         ...account,
         dailyLimit:   parseFloat(limitForm.dailyLimit),
         monthlyLimit: parseFloat(limitForm.monthlyLimit),
