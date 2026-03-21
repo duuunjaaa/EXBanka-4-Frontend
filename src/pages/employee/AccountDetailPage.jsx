@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import useWindowTitle from '../../hooks/useWindowTitle'
+import { useAccounts } from '../../context/AccountsContext'
 import { accountService } from '../../services/accountService'
 import { BankAccount } from '../../models/BankAccount'
+// TODO: replace with employee-scoped endpoint once backend adds GET /api/admin/accounts/:id
 import { fmt } from '../../utils/formatting'
 import Spinner from '../../components/Spinner'
 import { useApiError } from '../../context/ApiErrorContext'
@@ -37,26 +39,28 @@ function Card({ title, children, action }) {
 export default function AccountDetailPage() {
   const { id } = useParams()
   const { addSuccess } = useApiError()
-  const [account, setAccount]           = useState(null)
-  const [loading, setLoading]           = useState(true)
+  const { accounts, loading: listLoading, reload } = useAccounts()
+  const [detail, setDetail]             = useState(null)
   const [editingLimits, setEditingLimits] = useState(false)
   const [limitForm, setLimitForm]       = useState({ dailyLimit: '', monthlyLimit: '' })
   const [limitErrors, setLimitErrors]   = useState({})
   const [limitsLoading, setLimitsLoading] = useState(false)
 
+  const account = detail ?? accounts.find((a) => a.id === Number(id))
+
   useWindowTitle(account ? `${account.accountNumber} | AnkaBanka` : 'Account | AnkaBanka')
 
   useEffect(() => {
-    accountService.getAccountById(id)
-      .then((data) => {
-        setAccount(data)
-        setLimitForm({ dailyLimit: String(data.dailyLimit), monthlyLimit: String(data.monthlyLimit) })
-      })
-      .catch(() => setAccount(null))
-      .finally(() => setLoading(false))
-  }, [id])
+    if (accounts.length === 0 && !listLoading) reload()
+  }, [])
 
-  if (loading) {
+  useEffect(() => {
+    if (account && !detail) {
+      setLimitForm({ dailyLimit: String(account.dailyLimit), monthlyLimit: String(account.monthlyLimit) })
+    }
+  }, [account])
+
+  if (listLoading && !account) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
         <Spinner />
@@ -96,7 +100,7 @@ export default function AccountDetailPage() {
         dailyLimit:   parseFloat(limitForm.dailyLimit),
         monthlyLimit: parseFloat(limitForm.monthlyLimit),
       })
-      setAccount(new BankAccount({
+      setDetail(new BankAccount({
         ...account,
         dailyLimit:   parseFloat(limitForm.dailyLimit),
         monthlyLimit: parseFloat(limitForm.monthlyLimit),
