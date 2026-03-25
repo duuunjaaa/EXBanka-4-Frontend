@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useWindowTitle from '../../hooks/useWindowTitle'
 import ClientPortalLayout from '../../layouts/ClientPortalLayout'
@@ -34,8 +34,30 @@ export default function ClientTransfersPage() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(null)
 
+  const [history, setHistory]           = useState([])
+  const [historyLoading, setHistoryLoading] = useState(true)
+
+  const loadHistory = useCallback(async () => {
+    try {
+      const data = await transferService.getTransfers()
+      setHistory(data)
+    } catch {
+      // silently ignore — history is non-critical
+    } finally {
+      setHistoryLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { loadHistory() }, [loadHistory])
+
   const fromAccount = accounts.find((a) => a.id === Number(form.fromAccountId))
   const toAccount   = accounts.find((a) => a.id === Number(form.toAccountId))
+
+  const accountNameByNumber = (number) =>
+    accounts.find((a) => a.accountNumber === number)?.accountName ?? number
+
+  const accountCurrencyByNumber = (number) =>
+    accounts.find((a) => a.accountNumber === number)?.currency ?? ''
 
   function handleChange(e) {
     const { name, value } = e.target
@@ -73,6 +95,7 @@ export default function ClientTransfersPage() {
         amount:      parseFloat(form.amount),
       })
       await reloadAccounts()
+      await loadHistory()
       addSuccess(`${fmt(parseFloat(form.amount), fromAccount.currency)} transferred to ${toAccount.accountName}.`, 'Transfer Successful')
       setSuccess({
         from:   fromAccount,
@@ -127,12 +150,12 @@ export default function ClientTransfersPage() {
 
   return (
     <ClientPortalLayout>
-      <div className="px-8 py-8 max-w-2xl mx-auto w-full">
+      <div className="px-8 py-8 max-w-4xl mx-auto w-full">
 
         <h1 className="font-serif text-3xl font-light text-slate-900 dark:text-white mb-1">Transfer</h1>
         <div className="w-8 h-px bg-violet-500 dark:bg-violet-400 mb-8" />
 
-        <form onSubmit={handleSubmit} noValidate className="space-y-6">
+        <form onSubmit={handleSubmit} noValidate className="space-y-6 max-w-2xl">
 
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-5">
             <p className="text-xs tracking-widest uppercase text-violet-600 dark:text-violet-400">Accounts</p>
@@ -252,6 +275,60 @@ export default function ClientTransfersPage() {
           </div>
 
         </form>
+
+        {/* Transfer history */}
+        <div className="mt-10">
+          <h2 className="font-serif text-xl font-light text-slate-900 dark:text-white mb-1">History</h2>
+          <div className="w-6 h-px bg-violet-500 dark:bg-violet-400 mb-5" />
+
+          {historyLoading ? (
+            <p className="text-sm text-slate-400 dark:text-slate-500">Loading…</p>
+          ) : history.length === 0 ? (
+            <p className="text-sm text-slate-400 dark:text-slate-500">No transfers yet.</p>
+          ) : (
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-slate-800">
+                    <th className="text-left text-xs tracking-widest uppercase text-slate-400 dark:text-slate-500 px-5 py-3 font-normal">Date</th>
+                    <th className="text-left text-xs tracking-widest uppercase text-slate-400 dark:text-slate-500 px-5 py-3 font-normal">From</th>
+                    <th className="text-left text-xs tracking-widest uppercase text-slate-400 dark:text-slate-500 px-5 py-3 font-normal">To</th>
+                    <th className="text-right text-xs tracking-widest uppercase text-slate-400 dark:text-slate-500 px-5 py-3 font-normal">Amount</th>
+                    <th className="text-right text-xs tracking-widest uppercase text-slate-400 dark:text-slate-500 px-5 py-3 font-normal">Fee</th>
+                    <th className="text-right text-xs tracking-widest uppercase text-slate-400 dark:text-slate-500 px-5 py-3 font-normal">Rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {history.map((t, i) => (
+                    <tr
+                      key={t.id}
+                      className={`${i !== history.length - 1 ? 'border-b border-slate-100 dark:border-slate-800' : ''}`}
+                    >
+                      <td className="px-5 py-3.5 text-sm text-slate-500 dark:text-slate-400 font-light whitespace-nowrap">
+                        {new Date(t.timestamp).toLocaleString('sr-RS')}
+                      </td>
+                      <td className="px-5 py-3.5 text-sm text-slate-700 dark:text-slate-300 font-light">{accountNameByNumber(t.fromAccount)}</td>
+                      <td className="px-5 py-3.5 text-sm text-slate-700 dark:text-slate-300 font-light">{accountNameByNumber(t.toAccount)}</td>
+                      <td className="px-5 py-3.5 text-sm text-right whitespace-nowrap">
+                        <span className="text-slate-900 dark:text-white font-medium">{fmt(t.initialAmount)} <span className="text-xs font-normal text-slate-400 dark:text-slate-500">{accountCurrencyByNumber(t.fromAccount)}</span></span>
+                        {t.initialAmount !== t.finalAmount && (
+                          <span className="ml-1 text-slate-400 dark:text-slate-500 text-xs">→ {fmt(t.finalAmount)} {accountCurrencyByNumber(t.toAccount)}</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5 text-sm text-right text-slate-500 dark:text-slate-400 font-light whitespace-nowrap">
+                        {t.fee > 0 ? `${fmt(t.fee)} ${accountCurrencyByNumber(t.fromAccount)}` : '—'}
+                      </td>
+                      <td className="px-5 py-3.5 text-sm text-right text-slate-500 dark:text-slate-400 font-light whitespace-nowrap">
+                        {t.exchangeRate !== 1 ? t.exchangeRate.toFixed(4) : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
       </div>
     </ClientPortalLayout>
   )
