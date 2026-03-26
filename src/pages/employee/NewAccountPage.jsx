@@ -10,8 +10,21 @@ import { apiClient } from '../../services/apiClient'
 const FOREIGN_CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF', 'JPY', 'CAD', 'AUD']
 
 const ACTIVITY_CODES = [
-  '01.1', '10.1', '41.2', '45.1', '46.1', '47.1', '56.1',
-  '62.01', '62.02', '64.19', '69.1', '70.2', '85.3', '86.1', '96.0',
+  { code: '01.1',  branch: 'Growing of annual plants' },
+  { code: '10.1',  branch: 'Processing and preserving of meat' },
+  { code: '41.2',  branch: 'Construction of residential and non-residential buildings' },
+  { code: '45.1',  branch: 'Sale of motor vehicles' },
+  { code: '46.1',  branch: 'Agents in wholesale trade' },
+  { code: '47.1',  branch: 'Retail in non-specialised stores' },
+  { code: '56.1',  branch: 'Restaurants and mobile food service' },
+  { code: '62.01', branch: 'Computer programming' },
+  { code: '62.02', branch: 'IT consulting' },
+  { code: '64.19', branch: 'Other monetary intermediation' },
+  { code: '69.1',  branch: 'Legal activities' },
+  { code: '70.2',  branch: 'Business management consulting' },
+  { code: '85.3',  branch: 'Secondary education' },
+  { code: '86.1',  branch: 'Hospital activities' },
+  { code: '96.0',  branch: 'Other personal services' },
 ]
 
 const EMPTY_FORM = {
@@ -510,8 +523,8 @@ export default function NewAccountPage() {
                       className="input-field appearance-none pr-10"
                     >
                       <option value="">Select activity code…</option>
-                      {ACTIVITY_CODES.map((code) => (
-                        <option key={code} value={code}>{code}</option>
+                      {ACTIVITY_CODES.map(({ code, branch }) => (
+                        <option key={code} value={code}>{code} — {branch}</option>
                       ))}
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
