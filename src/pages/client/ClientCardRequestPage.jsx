@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useWindowTitle from '../../hooks/useWindowTitle'
 import ClientPortalLayout from '../../layouts/ClientPortalLayout'
 import { useClientAccounts } from '../../context/ClientAccountsContext'
 import { cardService } from '../../services/cardService'
+import { clientAccountService } from '../../services/clientAccountService'
 
 const EMPTY_AUTHORIZED = {
   firstName:   '',
@@ -36,9 +37,24 @@ export default function ClientCardRequestPage() {
   const [authorized, setAuthorized]       = useState(EMPTY_AUTHORIZED)
   const [errors, setErrors]               = useState({})
   const [submitting, setSubmitting]       = useState(false)
+  const [myCards, setMyCards]             = useState([])
+  const [isBusiness, setIsBusiness]       = useState(false)
 
-  const selectedAccount = accounts.find((a) => a.accountNumber === accountNumber)
-  const isBusiness      = selectedAccount?.type === 'business'
+  useEffect(() => {
+    cardService.getMyCards().then(setMyCards).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    const acct = accounts.find((a) => a.accountNumber === accountNumber)
+    if (!acct) { setIsBusiness(false); return }
+    clientAccountService.getAccountById(acct.id)
+      .then((full) => setIsBusiness(full.type === 'business'))
+      .catch(() => setIsBusiness(false))
+  }, [accountNumber, accounts])
+
+  const cardLimit   = isBusiness ? 1 : 2
+  const activeCards = myCards.filter((c) => c.accountNumber === accountNumber && c.status !== 'DEACTIVATED')
+  const atCardLimit = accountNumber && activeCards.length >= cardLimit
 
   function handleAuthorizedChange(e) {
     const { name, value } = e.target
@@ -134,6 +150,12 @@ export default function ClientCardRequestPage() {
             </select>
           </Field>
 
+          {atCardLimit && (
+            <p className="text-sm text-amber-600 dark:text-amber-400">
+              This account already has the maximum number of cards ({cardLimit} for {isBusiness ? 'business' : 'personal'} accounts).
+            </p>
+          )}
+
           {/* Business account: card for self vs authorized person */}
           {isBusiness && (
             <Field label="Card holder">
@@ -210,7 +232,7 @@ export default function ClientCardRequestPage() {
           )}
 
           <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={submitting} className="btn-primary">
+            <button type="submit" disabled={submitting || atCardLimit} className="btn-primary">
               {submitting ? 'Submitting…' : 'Request Card'}
             </button>
             <button type="button" onClick={() => navigate('/client/cards')}
