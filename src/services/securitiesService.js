@@ -42,4 +42,16 @@ export const securitiesService = {
     const { data } = await apiClient.get(`/securities/${id}/history`, { params })
     return data
   },
+
+  async getStocks(opts = {}) {
+    return this.getListings({ ...opts, type: 'STOCK' })
+  },
+
+  async getFutures(opts = {}) {
+    return this.getListings({ ...opts, type: 'FUTURES_CONTRACT' })
+  },
+
+  async getForex(opts = {}) {
+    return this.getListings({ ...opts, type: 'FOREX_PAIR' })
+  },
 }
