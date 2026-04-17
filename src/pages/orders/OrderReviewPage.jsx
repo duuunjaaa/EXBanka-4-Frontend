@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { Navigate } from 'react-router-dom'
 import useWindowTitle from '../../hooks/useWindowTitle'
+import { usePermission } from '../../hooks/usePermission'
 import { orderService } from '../../services/orderService'
 import { fmt } from '../../utils/formatting'
 
@@ -41,6 +43,8 @@ function isExpired(order) {
 
 export default function OrderReviewPage() {
   useWindowTitle('Order Review | AnkaBanka')
+  const { canAny } = usePermission()
+  if (!canAny(['isSupervisor', 'isAdmin'])) return <Navigate to="/" replace />
 
   const [orders,       setOrders]       = useState([])
   const [loading,      setLoading]      = useState(true)
@@ -52,7 +56,7 @@ export default function OrderReviewPage() {
   function load() {
     setLoading(true)
     orderService.getOrders()
-      .then((data) => setOrders(Array.isArray(data) ? data : (data.items ?? [])))
+      .then((data) => setOrders(Array.isArray(data) ? data : (data.orders ?? data.items ?? [])))
       .catch(() => {})
       .finally(() => setLoading(false))
   }

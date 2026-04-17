@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams, useNavigate, Navigate } from 'react-router-dom'
 import useWindowTitle from '../../hooks/useWindowTitle'
+import { usePermission } from '../../hooks/usePermission'
 import { securitiesService } from '../../services/securitiesService'
 import { orderService } from '../../services/orderService'
-import { accountService } from '../../services/accountService'
+import { apiClient } from '../../services/apiClient'
 import { fmt } from '../../utils/formatting'
 
 function determineOrderType(limitValue, stopValue) {
@@ -29,8 +30,11 @@ function orderTypeLabel(orderType, isAon, isMargin) {
 
 export default function CreateOrderPage() {
   useWindowTitle('New Order | AnkaBanka')
+  const { canAny } = usePermission()
   const [searchParams] = useSearchParams()
   const navigate       = useNavigate()
+
+  if (!canAny(['isAgent', 'isSupervisor', 'isAdmin'])) return <Navigate to="/" replace />
 
   const ticker    = searchParams.get('ticker')    ?? ''
   const direction = searchParams.get('direction') ?? 'BUY'
@@ -58,16 +62,22 @@ export default function CreateOrderPage() {
 
     async function init() {
       try {
-        const [{ items }, accs] = await Promise.all([
-          securitiesService.getListings({ ticker }),
-          accountService.getAccounts(),
-        ])
+        const { items } = await securitiesService.getListings({ ticker })
         const found = items.find((l) => l.ticker === ticker) ?? items[0] ?? null
         setListing(found)
-        setAccounts(accs)
-        if (accs.length > 0) setAccountId(String(accs[0].id))
       } catch {
         setInitError(true)
+        setLoadingInit(false)
+        return
+      }
+
+      try {
+        const fetchAccounts = apiClient.get('/api/bank-accounts').then((r) => r.data)
+        const accs = await fetchAccounts
+        setAccounts(Array.isArray(accs) ? accs : [])
+        if (accs.length > 0) setAccountId(String(accs[0].id ?? accs[0].accountId))
+      } catch {
+        // accounts failed — page still loads, user just won't have a pre-selected account
       } finally {
         setLoadingInit(false)
       }
@@ -95,7 +105,6 @@ export default function CreateOrderPage() {
         assetId:    listing.id,
         quantity:   Number(quantity),
         direction,
-        orderType,
         limitValue: limitValue !== '' ? Number(limitValue) : undefined,
         stopValue:  stopValue  !== '' ? Number(stopValue)  : undefined,
         isAon,
@@ -293,17 +302,17 @@ export default function CreateOrderPage() {
 
             <div className="space-y-3 mb-6 border border-slate-100 dark:border-slate-800 rounded-lg p-4">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-500 dark:text-slate-400">Odabrana količina hartija:</span>
+                <span className="text-slate-500 dark:text-slate-400">Quantity:</span>
                 <span className="text-slate-900 dark:text-white font-medium">{quantity}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-slate-500 dark:text-slate-400">Tip Ordera:</span>
+                <span className="text-slate-500 dark:text-slate-400">Order Type:</span>
                 <span className="text-slate-900 dark:text-white font-medium">
                   {orderTypeLabel(orderType, isAon, isMargin)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-slate-500 dark:text-slate-400">Približna cena:</span>
+                <span className="text-slate-500 dark:text-slate-400">Approximate Price:</span>
                 <span className="text-slate-900 dark:text-white font-medium">{fmt(approxPrice())}</span>
               </div>
             </div>
