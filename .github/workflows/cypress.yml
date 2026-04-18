@@ -27,17 +27,17 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           repository: RAF-SI-2025/EXBanka-4-Infrastructure
-          path: ${{ runner.workspace }}/EXBanka-4-Infrastructure
+          path: infrastructure
 
       - name: Create .env from secrets
         env:
           SECRETS_CONTEXT: ${{ toJson(secrets) }}
         run: |
-          echo $SECRETS_CONTEXT | jq -r "to_entries|map(\"\(.key)=\\\"\(.value|tostring)\\\"\")|.[]" >> ${{ runner.workspace }}/EXBanka-4-Infrastructure/.env
+          echo $SECRETS_CONTEXT | jq -r "to_entries|map(\"\(.key)=\\\"\(.value|tostring)\\\"\")|.[]" >> infrastructure/.env
 
       - name: Start backend
         run: docker compose up -d
-        working-directory: ${{ runner.workspace }}/EXBanka-4-Infrastructure
+        working-directory: ${{ github.workspace }}/infrastructure
 
       - name: Wait for services to start up and check health
         run: |
@@ -50,7 +50,7 @@ jobs:
             echo "One or more backend services are unhealthy. Check the logs for details."
             exit 1
           fi
-        working-directory: ${{ runner.workspace }}/EXBanka-4-Infrastructure
+        working-directory: ${{ github.workspace }}/infrastructure
 
       - name: Copy frontend environment variables
         run: cp .github/workflows/cypress.env.test.json cypress.env.json
@@ -90,17 +90,17 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           repository: RAF-SI-2025/EXBanka-4-Infrastructure
-          path: ${{ runner.workspace }}/EXBanka-4-Infrastructure
+          path: infrastructure
 
       - name: Create .env from secrets
         env:
           SECRETS_CONTEXT: ${{ toJson(secrets) }}
         run: |
-          echo $SECRETS_CONTEXT | jq -r "to_entries|map(\"\(.key)=\\\"\(.value|tostring)\\\"\")|.[]" >> ${{ runner.workspace }}/EXBanka-4-Infrastructure/.env
+          echo $SECRETS_CONTEXT | jq -r "to_entries|map(\"\(.key)=\\\"\(.value|tostring)\\\"\")|.[]" >> infrastructure/.env
 
       - name: Start backend
         run: docker compose up -d
-        working-directory: ${{ runner.workspace }}/EXBanka-4-Infrastructure
+        working-directory: ${{ github.workspace }}/infrastructure
 
       - name: Wait for services to start up and check health
         run: |
@@ -113,7 +113,7 @@ jobs:
             echo "One or more backend services are unhealthy. Check the logs for details."
             exit 1
           fi
-        working-directory: ${{ runner.workspace }}/EXBanka-4-Infrastructure
+        working-directory: ${{ github.workspace }}/infrastructure
 
       - name: Copy frontend environment variables
         run: cp .github/workflows/cypress.env.test.json cypress.env.json
