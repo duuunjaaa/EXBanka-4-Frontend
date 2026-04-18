@@ -66,6 +66,12 @@ function Navbar() {
             {(user?.permissions?.isAgent || user?.permissions?.isSupervisor) && (
               <NavLink to="/securities" className={linkClass}>Securities</NavLink>
             )}
+            {user?.permissions?.isSupervisor && (
+              <NavLink to="/admin/orders" className={linkClass}>Orders</NavLink>
+            )}
+            {(user?.permissions?.isAgent || user?.permissions?.isSupervisor) && (
+              <NavLink to="/portfolio" className={linkClass}>Portfolio</NavLink>
+            )}
           </div>
 
           {/* Desktop CTA */}
@@ -148,6 +154,12 @@ function Navbar() {
             )}
             {(user?.permissions?.isAgent || user?.permissions?.isSupervisor) && (
               <NavLink to="/securities" className={linkClass} onClick={() => setMenuOpen(false)}>Securities</NavLink>
+            )}
+            {user?.permissions?.isSupervisor && (
+              <NavLink to="/admin/orders" className={linkClass} onClick={() => setMenuOpen(false)}>Orders</NavLink>
+            )}
+            {(user?.permissions?.isAgent || user?.permissions?.isSupervisor) && (
+              <NavLink to="/portfolio" className={linkClass} onClick={() => setMenuOpen(false)}>Portfolio</NavLink>
             )}
             <div className="flex items-center gap-4">
               <button

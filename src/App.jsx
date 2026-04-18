@@ -9,7 +9,7 @@ import { AccountsProvider } from './context/AccountsContext'
 import { ClientAccountsProvider } from './context/ClientAccountsContext'
 import { ClientPaymentsProvider } from './context/ClientPaymentsContext'
 import { RecipientsProvider } from './context/RecipientsContext'
-import MainLayout from './layouts/MainLayout'
+import EmployeePortalLayout from './layouts/EmployeePortalLayout'
 import ProtectedRoute from './components/ProtectedRoute'
 import EmployeeHomePage from './pages/employee/EmployeeHomePage'
 import EmployeeLoginPage from './pages/employee/EmployeeLoginPage'
@@ -48,10 +48,16 @@ import EmployeeLoanApplicationsPage from './pages/employee/EmployeeLoanApplicati
 import EmployeeLoansPage from './pages/employee/EmployeeLoansPage'
 import ActuaryManagementPage from './pages/employee/ActuaryManagementPage'
 import StockExchangesPage from './pages/employee/StockExchangesPage'
+import CreateOrderPage from './pages/orders/CreateOrderPage'
+import OrderReviewPage from './pages/orders/OrderReviewPage'
+import PortfolioPage from './pages/orders/PortfolioPage'
 import SecuritiesPage from './pages/securities/SecuritiesPage'
 import ListingDetailPage from './pages/securities/ListingDetailPage'
+import StockOptionsPage from './pages/securities/StockOptionsPage'
 import ClientSecuritiesPage from './pages/client/ClientSecuritiesPage'
 import ClientListingDetailPage from './pages/client/ClientListingDetailPage'
+import ClientPortfolioPage from './pages/client/ClientPortfolioPage'
+import ClientCreateOrderPage from './pages/client/ClientCreateOrderPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 function App() {
@@ -67,11 +73,12 @@ function App() {
       <ClientsProvider>
       <AccountsProvider>
         <Routes>
-          {/* Public pages with Navbar + Footer */}
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<EmployeeHomePage />} />
-            {/* Protected pages (still use Navbar + Footer layout) */}
-            <Route element={<ProtectedRoute />}>
+          {/* Home — handles both logged-in (sidebar) and logged-out (landing) */}
+          <Route path="/" element={<EmployeeHomePage />} />
+
+          {/* Protected pages — full-screen sidebar layout */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<EmployeePortalLayout />}>
               <Route path="/admin/employees" element={<AdminEmployeesPage />} />
               <Route path="/admin/employees/new" element={<NewEmployeePage />} />
               <Route path="/admin/employees/:id" element={<EmployeeDetailPage />} />
@@ -86,8 +93,12 @@ function App() {
               <Route path="/admin/loans" element={<EmployeeLoansPage />} />
               <Route path="/admin/actuaries" element={<ActuaryManagementPage />} />
               <Route path="/admin/stock-exchanges" element={<StockExchangesPage />} />
+              <Route path="/admin/orders" element={<OrderReviewPage />} />
+              <Route path="/orders/new" element={<CreateOrderPage />} />
+              <Route path="/portfolio" element={<PortfolioPage />} />
               <Route path="/securities" element={<SecuritiesPage />} />
               <Route path="/securities/:id" element={<ListingDetailPage />} />
+              <Route path="/securities/:id/options" element={<StockOptionsPage />} />
             </Route>
           </Route>
 
@@ -118,6 +129,8 @@ function App() {
           <Route path="/client/recipients" element={<ClientRecipientsPage />} />
           <Route path="/client/securities" element={<ClientSecuritiesPage />} />
           <Route path="/client/securities/:id" element={<ClientListingDetailPage />} />
+          <Route path="/client/orders/new" element={<ClientCreateOrderPage />} />
+          <Route path="/client/portfolio" element={<ClientPortfolioPage />} />
 
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
