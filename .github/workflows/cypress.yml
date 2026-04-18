@@ -19,12 +19,14 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           repository: RAF-SI-2025/EXBanka-4-Backend
+          ref: ${{ github.head_ref || github.ref_name }}
           path: EXBanka-4-Backend
 
       - name: Checkout Infrastructure repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           repository: RAF-SI-2025/EXBanka-4-Infrastructure
+          ref: ${{ github.head_ref || github.ref_name }}
           path: EXBanka-4-Infrastructure
 
       - name: Create .env from secrets
@@ -84,12 +86,14 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           repository: RAF-SI-2025/EXBanka-4-Backend
+          ref: ${{ github.head_ref || github.ref_name }}
           path: EXBanka-4-Backend
 
       - name: Checkout Infrastructure repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           repository: RAF-SI-2025/EXBanka-4-Infrastructure
+          ref: ${{ github.head_ref || github.ref_name }}
           path: EXBanka-4-Infrastructure
 
       - name: Create .env from secrets
