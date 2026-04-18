@@ -34,8 +34,9 @@ jobs:
           echo $SECRETS_CONTEXT | jq -r "to_entries|map(\"\(.key)=\\\"\(.value|tostring)\\\"\")|.[]" >> EXBanka-4-Infrastructure/.env
 
       - name: Start backend
-        # skip the 'frontend' nginx service — Cypress starts the dev server itself
-        run: docker compose up -d --scale frontend=0
+        # exclude the 'frontend' nginx service — its build context (../EXBanka-4-Frontend) doesn't
+        # exist in CI; Cypress starts the dev server itself via 'npm run preview'
+        run: docker compose up -d $(docker compose config --services | grep -v '^frontend$')
         working-directory: ${{ github.workspace }}/EXBanka-4-Infrastructure
 
       - name: Wait for services to start up and check health
@@ -98,8 +99,9 @@ jobs:
           echo $SECRETS_CONTEXT | jq -r "to_entries|map(\"\(.key)=\\\"\(.value|tostring)\\\"\")|.[]" >> EXBanka-4-Infrastructure/.env
 
       - name: Start backend
-        # skip the 'frontend' nginx service — Cypress starts the dev server itself
-        run: docker compose up -d --scale frontend=0
+        # exclude the 'frontend' nginx service — its build context (../EXBanka-4-Frontend) doesn't
+        # exist in CI; Cypress starts the dev server itself via 'npm run preview'
+        run: docker compose up -d $(docker compose config --services | grep -v '^frontend$')
         working-directory: ${{ github.workspace }}/EXBanka-4-Infrastructure
 
       - name: Wait for services to start up and check health
