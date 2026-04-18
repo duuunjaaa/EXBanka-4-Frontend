@@ -22,6 +22,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Checkout Backend repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          repository: RAF-SI-2025/EXBanka-4-Backend
+          path: EXBanka-4-Backend
 
       - name: Checkout Infrastructure repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -59,7 +65,9 @@ jobs:
         timeout-minutes: 30
         uses: cypress-io/github-action@783cb3f07983868532cabaedaa1e6c00ff4786a8
         with:
-          start: npm run dev
+          start: npm run preview
+          wait-on: http://localhost:4173/
+          wait-on-timeout: 120
           browser: chrome
           spec: cypress/e2e/celina1/**
         env:
@@ -85,6 +93,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout Backend repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          repository: RAF-SI-2025/EXBanka-4-Backend
+          path: EXBanka-4-Backend
 
       - name: Checkout Infrastructure repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -122,8 +136,9 @@ jobs:
         timeout-minutes: 30
         uses: cypress-io/github-action@783cb3f07983868532cabaedaa1e6c00ff4786a8
         with:
-          start: npm run dev
-          browser: chrome
+          start: npm run preview
+          wait-on: http://localhost:4173/
+          wait-on-timeout: 120
           spec: cypress/e2e/celina2/**
         env:
           VITE_API_URL: http://localhost:8083
