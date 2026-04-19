@@ -110,11 +110,12 @@ export default function ClientListingDetailPage() {
           </div>
           <div className="flex items-center gap-4 mt-1">
             <button
-              onClick={() => navigate(`/client/orders/new?ticker=${listing.ticker}&direction=BUY`)}
+              onClick={() => navigate(`/client/orders/new?ticker=${encodeURIComponent(listing.ticker)}&direction=BUY`)}
               className="btn-primary"
             >
               Buy
             </button>
+
             <Link to="/client/securities" className="text-sm text-violet-600 dark:text-violet-400 hover:underline">
               ← Back
             </Link>
