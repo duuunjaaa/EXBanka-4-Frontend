@@ -144,10 +144,11 @@ function BankDepositModal({ fund, onClose, onSuccess }) {
   const [bankAccountId, setBankAccountId] = useState('')
   const [accounts, setAccounts]       = useState([])
   const [accountsLoading, setAccountsLoading] = useState(true)
+  const [amountError, setAmountError] = useState('')
   const [submitting, setSubmitting]   = useState(false)
 
   useEffect(() => {
-    accountService.getAccounts()
+    accountService.getBankAccounts()
       .then(list => {
         const rsd = list.filter(a => a.currencyCode === 'RSD')
         setAccounts(rsd)
@@ -158,11 +159,13 @@ function BankDepositModal({ fund, onClose, onSuccess }) {
   }, [])
 
   async function handleSubmit() {
-    if (!amount || Number(amount) <= 0) return
+    const n = Number(amount)
+    if (!amount || isNaN(n) || n <= 0) { setAmountError('Please enter a valid amount.'); return }
+    if (n < fund.minimumContribution) { setAmountError(`Minimum contribution is ${fmt(fund.minimumContribution, 'RSD')}.`); return }
+    setAmountError('')
     setSubmitting(true)
     try {
-      // POST /investment/funds/:id/invest (bank deposit uses same endpoint with bank account)
-      await fundService.invest(fund.id, { sourceAccountId: Number(bankAccountId), amount: Number(amount) })
+      await fundService.invest(fund.id, { sourceAccountId: Number(bankAccountId), amount: n })
       onSuccess()
     } finally {
       setSubmitting(false)
@@ -193,14 +196,17 @@ function BankDepositModal({ fund, onClose, onSuccess }) {
 
         <div className="px-6 py-5 flex flex-col gap-4">
           <div>
-            <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Amount (RSD)</label>
+            <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+              Amount (RSD) — minimum {fmt(fund.minimumContribution, 'RSD')}
+            </label>
             <input
               type="number"
               value={amount}
-              onChange={e => setAmount(e.target.value)}
-              placeholder="0.00"
-              className="input-field w-full text-sm"
+              onChange={e => { setAmount(e.target.value); setAmountError('') }}
+              placeholder={`${fund.minimumContribution}`}
+              className={`input-field w-full text-sm${amountError ? ' input-error' : ''}`}
             />
+            {amountError && <p className="text-xs text-red-500 mt-1">{amountError}</p>}
           </div>
 
           <div>
