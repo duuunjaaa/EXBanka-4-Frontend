@@ -3,6 +3,14 @@ import { actuaryInfoFromApi } from '../models/ActuaryInfo'
 
 export const actuaryService = {
   /**
+   * Fetch all active supervisors (for fund manager selection).
+   */
+  async getSupervisors() {
+    const { data } = await apiClient.get('/api/supervisors')
+    return data
+  },
+
+  /**
    * Fetch all agents with their actuary limit info.
    */
   async getActuaries() {
@@ -32,5 +40,10 @@ export const actuaryService = {
   async setNeedApproval(agentId, needApproval) {
     const { data } = await apiClient.put(`/api/actuaries/${agentId}/need-approval`, { need_approval: needApproval })
     return data
+  },
+
+  async getActuaryPerformances() {
+    const { data } = await apiClient.get('/api/actuaries/performances')
+    return Array.isArray(data) ? data : (data.performances ?? data.items ?? [])
   },
 }

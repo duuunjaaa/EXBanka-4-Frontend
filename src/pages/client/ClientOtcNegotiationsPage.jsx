@@ -1,10 +1,11 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useWindowTitle from '../../hooks/useWindowTitle'
-import { useAuth } from '../../context/AuthContext'
-import { otcService } from '../../services/otcService'
-import { securitiesService } from '../../services/securitiesService'
+import { useClientAuth } from '../../context/ClientAuthContext'
+import { clientOtcService } from '../../services/clientOtcService'
+import { clientSecuritiesService } from '../../services/clientSecuritiesService'
 import { fmt, fmtDate, fmtDateTime } from '../../utils/formatting'
+import ClientPortalLayout from '../../layouts/ClientPortalLayout'
 
 const SORT_COLS = ['pricePerStock', 'settlementDate', 'lastModified']
 
@@ -23,10 +24,10 @@ function getStatusLabel(neg, userId) {
   return myTurn ? 'Your turn' : 'Waiting for the other party'
 }
 
-export default function OtcNegotiationsPage() {
+export default function ClientOtcNegotiationsPage() {
   useWindowTitle('OTC Negotiations | AnkaBanka')
-  const { user } = useAuth()
-  const navigate  = useNavigate()
+  const { clientUser } = useClientAuth()
+  const navigate = useNavigate()
 
   const [negotiations, setNegotiations] = useState([])
   const [loading, setLoading]           = useState(true)
@@ -39,7 +40,7 @@ export default function OtcNegotiationsPage() {
     setLoading(true)
     setError(null)
     try {
-      const data = await otcService.getNegotiations()
+      const data = await clientOtcService.getNegotiations()
       const list = Array.isArray(data) ? data : (data.negotiations ?? data.items ?? [])
       setNegotiations(list)
       fetchMarketPrices(list)
@@ -53,7 +54,7 @@ export default function OtcNegotiationsPage() {
   async function fetchMarketPrices(list) {
     const tickers = [...new Set(list.map(n => n.ticker).filter(Boolean))]
     const results = await Promise.allSettled(
-      tickers.map(ticker => securitiesService.getListings({ ticker }))
+      tickers.map(ticker => clientSecuritiesService.getListings({ ticker }))
     )
     const prices = {}
     results.forEach((r, i) => {
@@ -93,7 +94,7 @@ export default function OtcNegotiationsPage() {
     return sortOrder === 'ASC' ? cmp : -cmp
   })
 
-  const userId = user?.id
+  const userId = clientUser?.id
 
   function thClass(sortable) {
     return `px-4 py-4 text-left text-xs tracking-widest uppercase text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap${
@@ -102,10 +103,9 @@ export default function OtcNegotiationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-6 py-16">
-      <div className="max-w-7xl mx-auto">
-
-        <p className="text-xs tracking-widest uppercase text-violet-600 dark:text-violet-400 mb-4">Employee Portal</p>
+    <ClientPortalLayout>
+      <div className="p-6">
+        <p className="text-xs tracking-widest uppercase text-violet-600 dark:text-violet-400 mb-4">Client Portal</p>
         <h1 className="font-serif text-4xl font-light text-slate-900 dark:text-white mb-3">OTC Negotiations</h1>
         <div className="w-10 h-px bg-violet-500 dark:bg-violet-400 mb-8" />
 
@@ -169,7 +169,7 @@ export default function OtcNegotiationsPage() {
                             {fmt(neg.pricePerStock)}
                           </td>
                           <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
-                            {neg.settlementDate ?? '—'}
+                            {fmtDate(neg.settlementDate)}
                           </td>
                           <td className="px-4 py-3 text-slate-700 dark:text-slate-300 tabular-nums">
                             {fmt(neg.premium)}
@@ -191,7 +191,7 @@ export default function OtcNegotiationsPage() {
                           </td>
                           <td className="px-4 py-3">
                             <button
-                              onClick={() => navigate(`/otc/negotiations/${neg.id}`)}
+                              onClick={() => navigate(`/client/otc/negotiations/${neg.id}`)}
                               className="btn-primary text-xs px-3 py-1"
                             >
                               Open
@@ -211,8 +211,7 @@ export default function OtcNegotiationsPage() {
             </div>
           )}
         </div>
-
       </div>
-    </div>
+    </ClientPortalLayout>
   )
 }

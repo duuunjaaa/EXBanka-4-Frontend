@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import useWindowTitle from '../../hooks/useWindowTitle'
-import { otcService } from '../../services/otcService'
+import { clientOtcService } from '../../services/clientOtcService'
 import { fmt, fmtDateTime } from '../../utils/formatting'
+import ClientPortalLayout from '../../layouts/ClientPortalLayout'
 
 function OfferModal({ item, onClose, onSubmit }) {
   const [quantity,       setQuantity]       = useState('')
@@ -136,8 +138,9 @@ function OfferModal({ item, onClose, onSubmit }) {
   )
 }
 
-export default function OtcMarketPage() {
+export default function ClientOtcMarketPage() {
   useWindowTitle('OTC Market | AnkaBanka')
+  const navigate = useNavigate()
 
   const [items,      setItems]      = useState([])
   const [loading,    setLoading]    = useState(true)
@@ -147,14 +150,15 @@ export default function OtcMarketPage() {
   useEffect(() => {
     setLoading(true)
     setError(null)
-    otcService.getMarket()
+    clientOtcService.getMarket()
       .then(data => setItems(Array.isArray(data) ? data : (data.items ?? [])))
       .catch(() => setError(true))
       .finally(() => setLoading(false))
   }, [])
 
   async function handleOffer(payload) {
-    await otcService.createNegotiation(payload)
+    await clientOtcService.createNegotiation(payload)
+    navigate('/client/otc/negotiations')
   }
 
   function thClass() {
@@ -162,10 +166,9 @@ export default function OtcMarketPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-6 py-16">
-      <div className="max-w-7xl mx-auto">
-
-        <p className="text-xs tracking-widest uppercase text-violet-600 dark:text-violet-400 mb-4">Employee Portal</p>
+    <ClientPortalLayout>
+      <div className="p-6">
+        <p className="text-xs tracking-widest uppercase text-violet-600 dark:text-violet-400 mb-4">Client Portal</p>
         <h1 className="font-serif text-4xl font-light text-slate-900 dark:text-white mb-3">OTC Market</h1>
         <div className="w-10 h-px bg-violet-500 dark:bg-violet-400 mb-8" />
 
@@ -249,7 +252,6 @@ export default function OtcMarketPage() {
             </div>
           )}
         </div>
-
       </div>
 
       {offerItem && (
@@ -259,6 +261,6 @@ export default function OtcMarketPage() {
           onSubmit={handleOffer}
         />
       )}
-    </div>
+    </ClientPortalLayout>
   )
 }
